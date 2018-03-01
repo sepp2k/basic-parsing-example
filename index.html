@@ -1,0 +1,18 @@
+<html>
+  <head>
+    <title>Basic Tokenizer</title>
+  </head>
+  <body>
+    <textarea id="source" rows=10 autofocus=true></textarea><br>
+    <button id="tokenize">Tokenize!</button>
+    <pre id="output-area"></pre>
+  </body>
+  <script src="tokenizer.js"></script>
+  <script>
+    document.getElementById('tokenize').onclick = function() {
+      for (token of tokenize(document.getElementById('source').value)) {
+        document.getElementById('output-area').innerText += token.kind + ": '" + token.value + "'\n";
+      }
+    };
+  </script>
+</html>
