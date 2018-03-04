@@ -1,17 +1,34 @@
 <html>
   <head>
-    <title>Basic Tokenizer</title>
+    <title>Basic Parser</title>
   </head>
   <body>
     <textarea id="source" rows=10 autofocus=true></textarea><br>
-    <button id="tokenize">Tokenize!</button>
-    <pre id="output-area"></pre>
+    <button id="parse">Parse!</button>
+    <h4>Tokens:</h4>
+    <pre id="token-area"></pre>
+    <h4>AST:</h4>
+    <pre id="ast-area"></pre>
+    <h4>Errors:</h4>
+    <pre id="error-area"></pre>
   </body>
   <script src="tokenizer.js"></script>
+  <script src="shunting-yard.js"></script>
   <script>
-    document.getElementById('tokenize').onclick = function() {
-      for (token of tokenize(document.getElementById('source').value)) {
-        document.getElementById('output-area').innerText += token.kind + ": '" + token.value + "'\n";
+    document.getElementById('parse').onclick = function() {
+      document.getElementById('token-area').innerText = "";
+      document.getElementById('ast-area').innerText = "";
+      document.getElementById('error-area').innerText = "";
+
+      let tokens = tokenize(document.getElementById('source').value);
+      for (token of tokens) {
+        document.getElementById('token-area').innerText += token.kind + ": '" + token.value + "'\n";
+      }
+
+      try {
+        document.getElementById('ast-area').innerText = JSON.stringify(shuntingYard(tokens), null, 4);
+      } catch (error) {
+        document.getElementById('error-area').innerText = error;
       }
     };
   </script>
