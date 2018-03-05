@@ -17,12 +17,7 @@ function shuntingYard(tokens) {
   };
   const operatorStack = [];
 
-  // Performance note: Unlike other languages that have `shift` and `unshift`
-  // methods, JavaScript's `shift` and `unshift` are usually implemented as O(n)
-  // operations rather than O(1), so using an array as a queue is inefficient.
-  // However for the sake of simplicity, we'll still use them rather than a
-  // third part library or rolling our own.
-  const outputQueue = [];
+  const outputStack = [];
 
   // We'll need this stack to support function calls without knowing the arity
   // ahead of time.
@@ -36,21 +31,21 @@ function shuntingYard(tokens) {
     let op = operatorStack.pop();
     switch (op.kind) {
       case '+': case '-': case '*': case '/': case '%': case '^': {
-        if (outputQueue.length < 2) {
+        if (outputStack.length < 2) {
           parseError("Operator at end of file");
         }
 
-        let rhs = outputQueue.pop();
-        let lhs = outputQueue.pop();
-        outputQueue.push( { kind: op.kind, lhs: lhs, rhs: rhs } );
+        let rhs = outputStack.pop();
+        let lhs = outputStack.pop();
+        outputStack.push( { kind: op.kind, lhs: lhs, rhs: rhs } );
         break;
       }
 
       case 'unary -': {
         // The unary - is translated as a binary - with 0 as the left operand.
-        let rhs = outputQueue.pop();
+        let rhs = outputStack.pop();
         let lhs = { kind: 'numberLiteral', value: 0 };
-        outputQueue.push( { kind: '-', lhs: lhs, rhs: rhs } );
+        outputStack.push( { kind: '-', lhs: lhs, rhs: rhs } );
         break;
       }
 
@@ -68,7 +63,7 @@ function shuntingYard(tokens) {
     if (expectingPrefix) {
       switch (tokens[i].kind) {
         case 'number':
-        outputQueue.push({kind: 'numberLiteral', value: tokens[i].value});
+        outputStack.push({kind: 'numberLiteral', value: tokens[i].value});
         expectingPrefix = false;
         break;
 
@@ -110,7 +105,7 @@ function shuntingYard(tokens) {
           // it again at the next iteration
           i++;
         } else {
-          outputQueue.push({kind: 'variable', name: tokens[i].value});
+          outputStack.push({kind: 'variable', name: tokens[i].value});
           expectingPrefix = false;
         }
         break;
@@ -122,7 +117,7 @@ function shuntingYard(tokens) {
         if (operatorStack.length > 0 && operatorStack[operatorStack.length - 1].kind == "function call") {
           let f = operatorStack.pop();
           arityStack.pop();
-          outputQueue.push( { kind: 'function call', functionName: f.functionName, arguments: [] } );
+          outputStack.push( { kind: 'function call', functionName: f.functionName, arguments: [] } );
           expectingPrefix = false;
         } else {
           parseError("Unexpected ) token; expected the beginning of an expression instead");
@@ -167,9 +162,9 @@ function shuntingYard(tokens) {
             let arity = arityStack.pop();
             let args = [];
             for (let j = 0; j < arity; j++) {
-              args.push(outputQueue.pop());
+              args.push(outputStack.pop());
             }
-            outputQueue.push( {
+            outputStack.push( {
               kind: 'function call',
               functionName: op.functionName,
               arguments: args.reverse()
@@ -188,10 +183,10 @@ function shuntingYard(tokens) {
   while (operatorStack.length > 0) {
     popOperator();
   }
-  if (outputQueue.length == 0) {
+  if (outputStack.length == 0) {
     parseError("Empty program");
-  } else if (outputQueue.length == 1) {
-    return outputQueue[0];
+  } else if (outputStack.length == 1) {
+    return outputStack[0];
   } else {
     parseError("Multiple consecutive expressions without infix operator in between");
   }
