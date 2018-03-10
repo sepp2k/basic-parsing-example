@@ -7,17 +7,14 @@ class RecursiveDescentParser {
   // We'll call this helper method to throw a parse error when we encounter
   // ill-formed input.
   parseError(message) {
-    let err = new Error(message);
+    let location = this.tokens[this.tokenIndex].location;
+    let err = new Error("Line " + location.line + ", column " + location.column + ": " + message);
     err.name = "ParseError";
     throw err;
   }
 
   get currentToken() {
-    if (this.tokenIndex < this.tokens.length) {
-      return this.tokens[this.tokenIndex].kind;
-    } else {
-      return 'EOF';
-    }
+    return this.tokens[this.tokenIndex].kind;
   }
 
   get currentTokenValue() {
