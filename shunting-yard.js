@@ -176,7 +176,7 @@ function shuntingYard(tokens) {
         break;
 
         default:
-        parseError("Unexpected " + tokens[i].value + " token; expected ',', ')' or infix operator");
+        parseError("Unexpected " + tokens[i].kind + " token; expected ',', ')' or infix operator");
       }
     }
   }
