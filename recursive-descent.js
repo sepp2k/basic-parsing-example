@@ -24,6 +24,77 @@ class RecursiveDescentParser {
     return this.tokens[this.tokenIndex].value;
   }
 
+  expect(tokenType) {
+    if (this.currentToken === tokenType) {
+      let value = this.currentTokenValue;
+      this.tokenIndex++;
+      return value;
+    } else {
+      this.parseError("Unexpected " + this.currentToken + " token; expected " + tokenType);
+    }
+  }
+
+  parseProgram() {
+    let definitions = [];
+    while (this.currentToken !== 'EOF') {
+      definitions.push(this.parseDefinition());
+    }
+    return definitions;
+  }
+
+  parseDefinition() {
+    switch (this.currentToken) {
+      case 'var': {
+        this.tokenIndex++;
+        let name = this.expect('identifier');
+        this.expect('=');
+        let expression = this.parseExpression();
+        if (this.currentToken !== ';') {
+          this.parseError("Unexpected " + this.currentToken + " token; expected infix operator or ';'");
+        }
+        this.tokenIndex++;
+        return {kind: 'variable definition', name: name, body: expression};
+      }
+
+      case 'def': {
+        this.tokenIndex++;
+        let name = this.expect('identifier');
+        let parameters = this.parseParameterList();
+        this.expect('=');
+        let expression = this.parseExpression();
+        if (this.currentToken !== ';') {
+          this.parseError("Unexpected " + this.currentToken + " token; expected infix operator or ';'");
+        }
+        this.tokenIndex++;
+        return {kind: 'function definition', name: name, parameters: parameters, body: expression};
+      }
+
+      default:
+      this.parseError("Unexpected " + this.currentToken + " token; expected 'var', 'def' or end of input");
+    }
+  }
+
+  parseParameterList() {
+    this.expect('(');
+    if (this.currentToken === ')') {
+      // Move the cursor beyond the ')'
+      this.tokenIndex++;
+      return [];
+    } else {
+      let params = [ this.expect('identifier') ];
+      while (this.currentToken !== ')') {
+        if (this.currentToken !== ',') {
+          this.parseError("Unexpected " + this.currentToken + " token; expected ',' or ')'");
+        }
+        this.tokenIndex++;
+        params.push(this.expect('identifier'));
+      }
+      // Move the cursor beyond the ')'
+      this.tokenIndex++;
+      return params;
+    }
+  }
+
   parseExpression() {
     return this.parseAdditiveExpression();
   }
@@ -150,4 +221,8 @@ class RecursiveDescentParser {
 
 function parseExpression(tokens) {
   return new RecursiveDescentParser(tokens).parseExpressionEOF();
+}
+
+function parseProgram(tokens) {
+  return new RecursiveDescentParser(tokens).parseProgram();
 }
