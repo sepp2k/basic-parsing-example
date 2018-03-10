@@ -4,7 +4,8 @@
   </head>
   <body>
     <textarea id="source" rows=10 autofocus=true></textarea><br>
-    <button id="parse">Parse!</button>
+    <button id="shunting-yard">Parse using shunting yard!</button>
+    <button id="recursive-descent">Parse using recursive descent!</button>
     <h4>Tokens:</h4>
     <pre id="token-area"></pre>
     <h4>AST:</h4>
@@ -14,8 +15,9 @@
   </body>
   <script src="tokenizer.js"></script>
   <script src="shunting-yard.js"></script>
+  <script src="recursive-descent.js"></script>
   <script>
-    document.getElementById('parse').onclick = function() {
+    document.getElementById('shunting-yard').onclick = function() {
       document.getElementById('token-area').innerText = "";
       document.getElementById('ast-area').innerText = "";
       document.getElementById('error-area').innerText = "";
@@ -27,6 +29,22 @@
 
       try {
         document.getElementById('ast-area').innerText = JSON.stringify(shuntingYard(tokens), null, 4);
+      } catch (error) {
+        document.getElementById('error-area').innerText = error;
+      }
+    };
+    document.getElementById('recursive-descent').onclick = function() {
+      document.getElementById('token-area').innerText = "";
+      document.getElementById('ast-area').innerText = "";
+      document.getElementById('error-area').innerText = "";
+
+      let tokens = tokenize(document.getElementById('source').value);
+      for (token of tokens) {
+        document.getElementById('token-area').innerText += token.kind + ": '" + token.value + "'\n";
+      }
+
+      try {
+        document.getElementById('ast-area').innerText = JSON.stringify(parseExpression(tokens), null, 4);
       } catch (error) {
         document.getElementById('error-area').innerText = error;
       }
