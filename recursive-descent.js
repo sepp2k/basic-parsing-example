@@ -93,7 +93,7 @@ class RecursiveDescentParser {
   }
 
   parseExpression() {
-    // Use the shunting yard algorithm to handle infix operator, but recursive descent for anything
+    // Use the shunting yard algorithm to handle infix operators, but recursive descent for anything
     // else. This allows the simplest possible implementation of shunting yard while removing the
     // ugliest part of recursive descent parsing (which needs an extra function for each level of
     // precedence when parsing infix expressions, whereas shunting yard just needs a table of operators).
