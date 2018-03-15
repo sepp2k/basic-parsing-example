@@ -59,7 +59,7 @@ function shuntingYard(tokens) {
   // currently at a point where we expect prefix operators (or numbers, variables
   // or function calls) or infix operators.
   let expectingPrefix = true;
-  for (let i = 0; i < tokens.length; i++) {
+  for (let i = 0; tokens[i].kind != 'EOF'; i++) {
     if (expectingPrefix) {
       switch (tokens[i].kind) {
         case 'number':
