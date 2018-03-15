@@ -5,12 +5,12 @@
   <body>
     <textarea id="expression-source" rows=10 autofocus=true>1 + 2 + 3 * x * f() ^ g(y) ^ (h(z, 4, 5) % 6)</textarea><br>
     <button id="shunting-yard">Parse expression (shunting yard)!</button>
-    <button id="recursive-descent-expression">Parse expression (recursive descent)!</button><br>
+    <button id="recursive-descent-expression">Parse expression (recursive descent + shunting yard)!</button><br>
     <textarea id="program-source" rows=10 autofocus=true>def double(x) = x * 2;
 def f(a,b,c) = c;
 var pi = 3.14159265359;
 var x = pi * 2 ^ (4+1) ^ double(23) % f(1,2,pi);</textarea><br>
-    <button id="recursive-descent-program">Parse program (recursive descent)!</button><br>
+    <button id="recursive-descent-program">Parse program (recursive descent + shunting yard)!</button><br>
     <h4>Tokens:</h4>
     <pre id="token-area"></pre>
     <h4>AST:</h4>

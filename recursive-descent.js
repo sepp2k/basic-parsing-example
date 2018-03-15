@@ -93,42 +93,47 @@ class RecursiveDescentParser {
   }
 
   parseExpression() {
-    return this.parseAdditiveExpression();
-  }
+    // Use the shunting yard algorithm to handle infix operator, but recursive descent for anything
+    // else. This allows the simplest possible implementation of shunting yard while removing the
+    // ugliest part of recursive descent parsing (which needs an extra function for each level of
+    // precedence when parsing infix expressions, whereas shunting yard just needs a table of operators).
+    const infixOperators = {
+      '+': {kind: '+', precedence: 1, associativity: 'left'},
+      '-': {kind: '-', precedence: 1, associativity: 'left'},
+      '*': {kind: '*', precedence: 2, associativity: 'left'},
+      '/': {kind: '/', precedence: 2, associativity: 'left'},
+      '%': {kind: '%', precedence: 2, associativity: 'left'},
+      '^': {kind: '^', precedence: 3, associativity: 'right'}
+    };
 
-  parseAdditiveExpression() {
-    let expression = this.parseMultiplicativeExpression();
-    while (this.currentToken === '+' || this.currentToken === '-') {
-      let operator = this.currentToken;
-      this.tokenIndex++;
-      let rhs = this.parseMultiplicativeExpression();
-      expression = {kind: operator, lhs: expression, rhs: rhs};
-    }
-    return expression;
-  }
+    const operatorStack = [];
+    const outputStack = [ this.parsePrefixExpression() ];
 
-  parseMultiplicativeExpression() {
-    let expression = this.parseExponentialExpression();
-    while (this.currentToken === '*' || this.currentToken === '/' || this.currentToken === '%') {
-      let operator = this.currentToken;
-      this.tokenIndex++;
-      let rhs = this.parseExponentialExpression();
-      expression = {kind: operator, lhs: expression, rhs: rhs};
+    function popOperator() {
+      let op = operatorStack.pop();
+      let rhs = outputStack.pop();
+      let lhs = outputStack.pop();
+      outputStack.push( { kind: op.kind, lhs: lhs, rhs: rhs } );
     }
-    return expression;
-  }
 
-  parseExponentialExpression() {
-    let lhs = this.parsePrefixExpression();
-    // Since ^ is right-associative, we use recursive calls to parseExponentialExpression
-    // instead of a while loop
-    if (this.currentToken === '^') {
+    let op;
+    // While the current token is an infix operator
+    while ((op = infixOperators[this.currentToken])) {
+      while (operatorStack.length > 0 && (operatorStack[operatorStack.length - 1].precedence > op.precedence ||
+             operatorStack[operatorStack.length - 1].precedence == op.precedence && op.associativity == "left")) {
+        popOperator();
+      }
+      operatorStack.push(op);
       this.tokenIndex++;
-      let rhs = this.parseExponentialExpression();
-      return {kind: '^', lhs: lhs, rhs: rhs};
-    } else {
-      return lhs;
+      outputStack.push(this.parsePrefixExpression());
     }
+    while (operatorStack.length > 0) {
+      popOperator();
+    }
+    if (outputStack.length !== 1) {
+      throw "Internal error: outputStack did not end up with exactly one element: " + JSON.stringify(outputStack);
+    }
+    return outputStack[0];
   }
 
   parsePrefixExpression() {
